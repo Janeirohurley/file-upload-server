@@ -42,3 +42,6 @@ coverage/
 .next/
 turbo/
 .vercel/
+
+#uploads/*
+uploads/
