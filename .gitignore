@@ -42,6 +42,8 @@ coverage/
 .next/
 turbo/
 .vercel/
+.qodo/
+data/
 
 #uploads/*
 uploads/

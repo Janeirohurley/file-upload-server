@@ -12,6 +12,9 @@ import fs from 'fs';
 import path from 'path';
 import expressStatusMonitor from 'express-status-monitor';
 import { swaggerSpec, swaggerUi } from './swagger';
+import expressWinston from 'express-winston';
+import { format, transports } from 'winston';
+import { requestMonitorMiddleware } from './utils/reqMonitor';
 
 dotenv.config();
 
@@ -24,6 +27,24 @@ app.use(cors());
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
+app.use(requestMonitorMiddleware);
+// Serve static files from uploads directory for public access
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+app.use(expressWinston.logger({
+  transports: [
+    new transports.Console(),
+    new transports.File({ filename: 'logs/requests.log' })
+  ],
+  format: format.combine(
+    format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    format.json()
+  ),
+  meta: true,
+  msg: '{{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms',
+  requestWhitelist: ['method', 'url', 'headers', 'query', 'body'],
+  responseWhitelist: ['statusCode'],
+}));
 
 if (process.env.NODE_ENV !== 'test') {
   app.use(expressStatusMonitor());
@@ -46,6 +67,17 @@ app.get('/', (req, res) => {
 if (process.env.NODE_ENV !== 'test') {
   app.get('/status', expressStatusMonitor()); // Route pour express-status-monitor
 }
+
+app.use(expressWinston.errorLogger({
+  transports: [
+    new transports.Console(),
+    new transports.File({ filename: 'logs/errors.log' }),
+  ],
+  format: format.combine(
+    format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    format.json()
+  ),
+}));
 
 app.use(errorHandler);
 
