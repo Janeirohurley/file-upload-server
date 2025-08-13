@@ -7,10 +7,35 @@ import {
   updateUser,
   deleteUser
 } from '../controllers/authController';
-import { errorHandler } from '../middlewares/errorHandler';
 import { requireAuth } from '../middlewares/auth';
 
 const router = express.Router();
+
+// Basic validation middlewares (no external deps)
+const validateRegister = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const { username, email, password } = req.body || {};
+  if (!username || typeof username !== 'string') {
+    return res.status(400).json({ error: 'username requis' });
+  }
+  if (!email || typeof email !== 'string' || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    return res.status(400).json({ error: 'email invalide' });
+  }
+  if (!password || typeof password !== 'string' || password.length < 6) {
+    return res.status(400).json({ error: 'password trop court (>=6)' });
+  }
+  next();
+};
+
+const validateLogin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const { username, password } = req.body || {};
+  if (!username || typeof username !== 'string') {
+    return res.status(400).json({ error: 'username requis' });
+  }
+  if (!password || typeof password !== 'string') {
+    return res.status(400).json({ error: 'password requis' });
+  }
+  next();
+};
 
 /**
  * @swagger
@@ -48,7 +73,7 @@ const router = express.Router();
  *       409:
  *         description: Utilisateur ou email déjà existant
  */
-router.post('/register', errorHandler, register);
+router.post('/register', validateRegister, register);
 
 /**
  * @swagger
@@ -83,7 +108,7 @@ router.post('/register', errorHandler, register);
  *       401:
  *         description: Identifiants invalides ou mot de passe incorrect
  */
-router.post('/login', errorHandler, login);
+router.post('/login', validateLogin, login);
 
 /**
  * @swagger

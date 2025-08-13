@@ -1,7 +1,6 @@
 import express from 'express';
 import { uploadFile, uploadBlob } from '../controllers/uploadController';
 import { upload } from '../middlewares/multerConfig';
-import { errorHandler } from '../middlewares/errorHandler';
 import { requireAuth } from '../middlewares/auth';
 
 const router = express.Router();
@@ -64,7 +63,15 @@ const router = express.Router();
  *         description: Erreur serveur
  */
 
-router.post('/', errorHandler, requireAuth, upload.single('file'), uploadFile);
-router.post('/blob', errorHandler, requireAuth, uploadBlob);
+// Ensure auth before expensive body parsing
+router.post('/', requireAuth, upload.single('file'), uploadFile);
+
+// Parse raw audio payloads for blob uploads (2MB limit)
+router.post(
+  '/blob',
+  requireAuth,
+  express.raw({ type: ['audio/wav', 'audio/mpeg'], limit: '2mb' }),
+  uploadBlob
+);
 
 export default router;
