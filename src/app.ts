@@ -1,4 +1,5 @@
-import express from 'express';
+
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -11,7 +12,7 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import expressStatusMonitor from 'express-status-monitor';
-import { swaggerSpec, swaggerUi } from './swagger';
+import { getSwaggerSpec, swaggerUi } from './swagger';
 import expressWinston from 'express-winston';
 import { format, transports } from 'winston';
 import { requestMonitorMiddleware } from './utils/reqMonitor';
@@ -53,7 +54,14 @@ if (process.env.NODE_ENV !== 'test') {
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 app.use(limiter);
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api-docs', swaggerUi.serve, (req: Request, res: Response, next: NextFunction) => {
+  const protocol = req.protocol; // "http" ou "https"
+  const host = req.get('host');  // ex: localhost:3000 ou api.monsite.com
+  const baseUrl = process.env.API_BASE_URL || `${protocol}://${host}/api/v1`;
+
+  const swaggerSpec = getSwaggerSpec(baseUrl);
+  swaggerUi.setup(swaggerSpec)(req, res, next);
+});
 
 // Routes
 app.use('/api/v1/upload', uploadRoutes);
