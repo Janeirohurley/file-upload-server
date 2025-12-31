@@ -8,5 +8,14 @@
     "sizeBytes": 142872,
     "url": "http://localhost:3000/uploads/1754852167544-357098451.jpg",
     "uploaderId": 1754069821677
+  },
+  {
+    "id": 1755103050307,
+    "createdAt": "2025-08-13T16:37:30.307Z",
+    "filename": "1755103050258-765222423.jpg",
+    "originalName": "20a5bc86-008b-42bf-bd12-39b28c9a3159.jpg",
+    "mimeType": "image/jpeg",
+    "sizeBytes": 90052,
+    "url": "http://localhost:3002/uploads/1755103050258-765222423.jpg"
   }
 ]

@@ -64,12 +64,11 @@ const router = express.Router();
  */
 
 // Ensure auth before expensive body parsing
-router.post('/', requireAuth, upload.single('file'), uploadFile);
+router.post('/', upload.single('file'), uploadFile);
 
 // Parse raw audio payloads for blob uploads (2MB limit)
 router.post(
   '/blob',
-  requireAuth,
   express.raw({ type: ['audio/wav', 'audio/mpeg'], limit: '2mb' }),
   uploadBlob
 );
